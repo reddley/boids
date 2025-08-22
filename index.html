@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swarm Intelligence: Flocking Behavior</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: radial-gradient(circle at 20% 80%, #0a0a0a 0%, #000000 50%, #001122 100%);
+            color: white;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            margin-bottom: 32px;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #60a5fa 0%, #22d3ee 50%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            letter-spacing: -0.02em;
+            text-shadow: 0 0 30px rgba(96, 165, 250, 0.3);
+        }
+        
+        .subtitle {
+            color: #9ca3af;
+            font-size: 1.1rem;
+        }
+        
+        .info-panel {
+            background: rgba(17, 24, 39, 0.75);
+            border: 1px solid rgba(55, 65, 81, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: block;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+        
+        .info-panel:hover {
+            background: rgba(17, 24, 39, 0.85);
+        }
+        
+        .info-panel.hidden {
+            display: none;
+        }
+        
+        .info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .info-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #60a5fa;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: #6b7280;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 2px 6px;
+            transition: color 0.2s;
+        }
+        
+        .close-btn:hover {
+            color: #d1d5db;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .info-item h4 {
+            font-weight: 600;
+            margin-bottom: 2px;
+            font-size: 0.85rem;
+        }
+        
+        .info-item p {
+            color: #9ca3af;
+            font-size: 0.8rem;
+            line-height: 1.3;
+        }
+        
+        .info-note {
+            color: #6b7280;
+            font-size: 0.75rem;
+            margin-top: 8px;
+            line-height: 1.3;
+        }
+        
+        .canvas-container {
+            margin-bottom: 0;
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .canvas-container::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% + 8px);
+            height: calc(100% + 8px);
+            max-width: 808px;
+            background: linear-gradient(45deg, #3b82f6, #22d3ee, #a855f7, #3b82f6);
+            background-size: 400% 400%;
+            border-radius: 16px;
+            z-index: -1;
+            animation: gradientShift 8s ease infinite;
+            opacity: 0.6;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        #canvas {
+            border: none;
+            border-radius: 12px 12px 0 0;
+            background: #000;
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.6),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        #canvas:hover {
+            transform: scale(1.005);
+        }
+        
+        .control-dock {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto 32px auto;
+        }
+        
+        .control-handle {
+            width: 100%;
+            height: 24px;
+            background: rgba(17, 24, 39, 0.75);
+            border: 1px solid rgba(55, 65, 81, 0.3);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            backdrop-filter: blur(16px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .control-handle:hover {
+            background: rgba(17, 24, 39, 0.85);
+        }
+        
+        .control-handle-icon {
+            font-size: 0.9rem;
+            color: #60a5fa;
+            transition: transform 0.2s ease;
+        }
+        
+        .control-handle.collapsed .control-handle-icon {
+            transform: rotate(180deg);
+        }
+        
+        .control-panels {
+            position: absolute;
+            bottom: 24px;
+            left: 0;
+            right: 0;
+            background: rgba(17, 24, 39, 0.75);
+            border: 1px solid rgba(55, 65, 81, 0.3);
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .control-panels.expanded {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .control-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(55, 65, 81, 0.3);
+            padding: 0 12px;
+        }
+        
+        .control-tab {
+            padding: 6px 12px;
+            background: none;
+            border: none;
+            color: #6b7280;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .control-tab:hover {
+            color: #9ca3af;
+        }
+        
+        .control-tab.active {
+            color: #60a5fa;
+            border-bottom-color: #60a5fa;
+        }
+        
+        .control-content {
+            padding: 12px;
+            display: none;
+        }
+        
+        .control-content.active {
+            display: block;
+        }
+        
+        .compact-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+        }
+        
+        .compact-control {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .compact-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #9ca3af;
+        }
+        
+        .compact-input {
+            width: 100%;
+            height: 3px;
+            background: rgba(55, 65, 81, 0.6);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .compact-input:hover {
+            height: 4px;
+        }
+        
+        .compact-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .compact-input::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            padding: 8px 12px;
+            border-top: 1px solid rgba(55, 65, 81, 0.3);
+        }
+        
+        .quick-btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(8px);
+            white-space: nowrap;
+        }
+        
+        .quick-btn:hover {
+            background: rgba(59, 130, 246, 0.25);
+        }
+        
+        .compact-select {
+            padding: 4px 8px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            border-radius: 4px;
+            color: white;
+            font-size: 0.7rem;
+            transition: all 0.2s ease;
+        }
+        
+        .compact-select:focus {
+            outline: none;
+            border-color: #60a5fa;
+            background: rgba(0, 0, 0, 0.6);
+        }
+        
+        input[type="color"] {
+            background: transparent;
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        input[type="color"]:hover {
+            border-color: rgba(96, 165, 250, 0.5);
+        }
+        
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+        }
+        
+        .preset-btn {
+            padding: 6px 4px;
+            border: none;
+            border-radius: 4px;
+            background: rgba(59, 130, 246, 0.1);
+            color: #9ca3af;
+            font-size: 0.65rem;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            line-height: 1.1;
+        }
+        
+        .preset-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            color: #d1d5db;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #4b5563, #374151);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #374151, #1f2937);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(75, 85, 99, 0.4);
+        }
+        
+        .settings-panel {
+            background: rgba(17, 24, 39, 0.75);
+            border: 1px solid rgba(55, 65, 81, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+        
+        .settings-panel:hover {
+            background: rgba(17, 24, 39, 0.85);
+        }
+        
+        .settings-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #22d3ee;
+            margin-bottom: 16px;
+        }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .control-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .control-input {
+            width: 100%;
+            height: 6px;
+            background: rgba(55, 65, 81, 0.8);
+            border-radius: 8px;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .control-input:hover {
+            height: 8px;
+            background: rgba(75, 85, 99, 0.9);
+        }
+        
+        .control-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .control-input::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        select {
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            border-radius: 12px;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(8px);
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            background: rgba(0, 0, 0, 0.9);
+        }
+        
+        select:hover {
+            border-color: rgba(156, 163, 175, 0.7);
+            background: rgba(0, 0, 0, 0.9);
+        }
+        
+        .insights {
+            background: rgba(17, 24, 39, 0.75);
+            border: 1px solid rgba(55, 65, 81, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 24px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .insights h3 {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #60a5fa;
+            font-size: 1rem;
+        }
+        
+        .insights ul {
+            list-style: none;
+            color: #d1d5db;
+        }
+        
+        .insights li {
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            padding-left: 4px;
+            transition: all 0.2s ease;
+            border-left: 1px solid transparent;
+        }
+        
+        .insights li:hover {
+            color: #f3f4f6;
+            border-left-color: #60a5fa;
+            padding-left: 8px;
+        }
+        
+        .insights strong {
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .compact-controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-tabs {
+                justify-content: center;
+            }
+            
+            .control-tab {
+                padding: 10px 16px;
+                font-size: 0.85rem;
+            }
+            
+            .quick-actions {
+                flex-wrap: wrap;
+            }
+            
+            .quick-btn {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .control-dock {
+                margin: 0 -16px 32px -16px;
+            }
+            
+            .control-handle,
+            .control-panels {
+                border-radius: 0;
+            }
+            
+            #canvas {
+                border-radius: 0;
+            }
+            
+            .canvas-container::before {
+                border-radius: 0;
+            }
+        }
+        
+        /* Color-coded sliders with glow effects */
+        .cyan::-webkit-slider-thumb { 
+            background: linear-gradient(135deg, #22d3ee, #0891b2);
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+        }
+        .cyan::-webkit-slider-thumb:hover { 
+            box-shadow: 0 0 20px rgba(34, 211, 238, 0.8);
+        }
+        
+        .yellow::-webkit-slider-thumb { 
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+        .yellow::-webkit-slider-thumb:hover { 
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.8);
+        }
+        
+        .green::-webkit-slider-thumb { 
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+        }
+        .green::-webkit-slider-thumb:hover { 
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.8);
+        }
+        
+        .purple::-webkit-slider-thumb { 
+            background: linear-gradient(135deg, #a855f7, #9333ea);
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+        }
+        .purple::-webkit-slider-thumb:hover { 
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.8);
+        }
+        
+        .blue::-webkit-slider-thumb { 
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+        .blue::-webkit-slider-thumb:hover { 
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+        }
+        
+        /* Compact slider styles */
+        .compact-input.cyan::-webkit-slider-thumb { 
+            background: linear-gradient(135deg, #22d3ee, #0891b2);
+            box-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+        }
+        .compact-input.yellow::-webkit-slider-thumb { 
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+        }
+        .compact-input.green::-webkit-slider-thumb { 
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
+        }
+        .compact-input.purple::-webkit-slider-thumb { 
+            background: linear-gradient(135deg, #a855f7, #9333ea);
+            box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+        }
+        .compact-input.blue::-webkit-slider-thumb { 
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Swarm Intelligence: Flocking Behavior</h1>
+            <p class="subtitle">Watch how simple local rules create complex emergent patterns in this boids simulation.</p>
+        </div>
+
+        <div id="info-panel" class="info-panel">
+            <div class="info-header">
+                <h3 class="info-title">
+                    <span>ℹ</span> How Swarm Intelligence Works
+                </h3>
+                <button class="close-btn" onclick="toggleInfo()">×</button>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <h4 style="color: #fbbf24;">Separation</h4>
+                    <p>Boids avoid crowding neighbors by steering away from nearby others.</p>
+                </div>
+                <div class="info-item">
+                    <h4 style="color: #4ade80;">Alignment</h4>
+                    <p>Boids steer toward the average heading of their neighbors.</p>
+                </div>
+                <div class="info-item">
+                    <h4 style="color: #a855f7;">Cohesion</h4>
+                    <p>Boids steer toward the average position of their neighbors.</p>
+                </div>
+            </div>
+            <p class="info-note">
+                These three simple rules, applied locally by each individual, produce the complex flocking patterns you see. 
+                This emergent behavior demonstrates how intelligence can arise from simple interactions.
+            </p>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="canvas" width="800" height="500"></canvas>
+        </div>
+
+        <div class="control-dock">
+            <div class="control-panels" id="control-panels">
+                <div class="control-tabs">
+                    <button class="control-tab active" onclick="switchTab('visual')">👁️</button>
+                    <button class="control-tab" onclick="switchTab('behavior')">🎯</button>
+                    <button class="control-tab" onclick="switchTab('presets')">⚡</button>
+                </div>
+                
+                <div class="control-content active" id="visual-content">
+                    <div class="compact-controls">
+                        <div class="compact-control">
+                            <select id="shape-select" class="compact-select" onchange="updateParam('shape', this.value)">
+                                <option value="circle">● Circle</option>
+                                <option value="triangle">▲ Triangle</option>
+                                <option value="square">■ Square</option>
+                                <option value="diamond">◆ Diamond</option>
+                            </select>
+                        </div>
+                        
+                        <div class="compact-control">
+                            <label class="compact-label">
+                                📏 <span id="size-value">3</span>
+                            </label>
+                            <input type="range" class="compact-input cyan" min="2" max="8" step="0.5" value="3" 
+                                   oninput="updateParam('size', parseFloat(this.value)); updateDisplay('size-value', this.value)">
+                        </div>
+                        
+                        <div class="compact-control">
+                            <label class="compact-label">
+                                👥 <span id="count-value">150</span>
+                            </label>
+                            <input type="range" class="compact-input cyan" min="25" max="400" step="25" value="150" 
+                                   oninput="updateParam('boidsCount', parseInt(this.value)); updateDisplay('count-value', this.value)">
+                        </div>
+                        
+                        <div class="compact-control">
+                            <label class="compact-label">
+                                🏃 <span id="speed-value">2</span>
+                            </label>
+                            <input type="range" class="compact-input blue" min="0.5" max="5" step="0.1" value="2" 
+                                   oninput="updateParam('maxSpeed', parseFloat(this.value)); updateDisplay('speed-value', this.value)">
+                        </div>
+                        
+                        <div class="compact-control">
+                            <label class="compact-label">
+                                ✨ <span id="trail-value">10</span>%
+                            </label>
+                            <input type="range" class="compact-input cyan" min="0" max="50" value="10" 
+                                   oninput="updateParam('trailOpacity', parseInt(this.value) / 100); updateDisplay('trail-value', this.value)">
+                        </div>
+                        
+                        <div class="compact-control">
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                                <input type="color" id="color-picker" value="#60a5fa" 
+                                       onchange="updateParam('color', this.value); updateParam('randomColors', false)"
+                                       style="width: 24px; height: 24px; border: none; border-radius: 4px; cursor: pointer;">
+                                <button class="quick-btn" onclick="toggleRandomColors()" id="random-btn" style="font-size: 0.6rem; padding: 2px 6px;">
+                                    🎲
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-content" id="behavior-content">
+                    <div class="compact-controls">
+                        <div class="compact-control">
+                            <label class="compact-label">
+                                ↔️ <span id="separation-value">25</span>
+                            </label>
+                            <input type="range" class="compact-input yellow" min="10" max="100" value="25" 
+                                   oninput="updateParam('separation', parseInt(this.value)); updateDisplay('separation-value', this.value)">
+                        </div>
+                        
+                        <div class="compact-control">
+                            <label class="compact-label">
+                                ↗️ <span id="alignment-value">50</span>
+                            </label>
+                            <input type="range" class="compact-input green" min="20" max="150" value="50" 
+                                   oninput="updateParam('alignment', parseInt(this.value)); updateDisplay('alignment-value', this.value)">
+                        </div>
+                        
+                        <div class="compact-control">
+                            <label class="compact-label">
+                                🎯 <span id="cohesion-value">50</span>
+                            </label>
+                            <input type="range" class="compact-input purple" min="20" max="150" value="50" 
+                                   oninput="updateParam('cohesion', parseInt(this.value)); updateDisplay('cohesion-value', this.value)">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-content" id="presets-content">
+                    <div class="preset-grid">
+                        <button class="preset-btn" onclick="loadPreset('schooling')">🐟<br>Fish</button>
+                        <button class="preset-btn" onclick="loadPreset('murmurations')">🐦<br>Birds</button>
+                        <button class="preset-btn" onclick="loadPreset('swarm')">🐝<br>Swarm</button>
+                        <button class="preset-btn" onclick="loadPreset('scattered')">💫<br>Scatter</button>
+                        <button class="preset-btn" onclick="loadPreset('tight')">🎯<br>Tight</button>
+                        <button class="preset-btn" onclick="loadPreset('chaotic')">🌪️<br>Chaos</button>
+                    </div>
+                </div>
+                
+                <div class="quick-actions">
+                    <button id="play-btn" class="quick-btn" onclick="toggleAnimation()">
+                        <span id="play-icon">⏸</span>
+                    </button>
+                    <button class="quick-btn" onclick="resetSimulation()">↻</button>
+                    <button id="info-btn" class="quick-btn" onclick="toggleInfo()" style="display: none;">ℹ</button>
+                </div>
+            </div>
+            
+            <div class="control-handle" id="control-handle" onclick="toggleControls()">
+                <div class="control-handle-icon">⌄</div>
+            </div>
+        </div>
+
+        <div class="insights">
+            <h3>Key Insights About Swarm Intelligence</h3>
+            <ul>
+                <li>• <strong>Emergent behavior:</strong> Complex patterns arise from simple rules</li>
+                <li>• <strong>Local interactions:</strong> Each boid only knows about its immediate neighbors</li>
+                <li>• <strong>No central control:</strong> There's no leader directing the flock</li>
+                <li>• <strong>Adaptive systems:</strong> The flock responds dynamically to changes</li>
+                <li>• <strong>Collective intelligence:</strong> The group exhibits behaviors no individual possesses</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let canvas, ctx;
+        let boids = [];
+        let animationId;
+        let isRunning = true;
+        
+        // Parameters
+        let params = {
+            separation: 25,
+            alignment: 50,
+            cohesion: 50,
+            maxSpeed: 2,
+            boidsCount: 150,
+            shape: 'circle',
+            size: 3,
+            trailOpacity: 0.1,
+            color: '#60a5fa',
+            randomColors: false
+        };
+
+        // Boid class
+        class Boid {
+            constructor(x, y) {
+                this.position = { x, y };
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 2,
+                    y: (Math.random() - 0.5) * 2
+                };
+                this.acceleration = { x: 0, y: 0 };
+                this.maxSpeed = params.maxSpeed;
+                this.maxForce = 0.03;
+                this.size = params.size;
+                this.color = params.randomColors ? this.generateRandomColor() : params.color;
+            }
+
+            generateRandomColor() {
+                const colors = [
+                    '#60a5fa', '#34d399', '#fbbf24', '#f87171', '#a78bfa', 
+                    '#fb7185', '#4ade80', '#38bdf8', '#fde047', '#fb923c',
+                    '#22d3ee', '#c084fc', '#10b981', '#ef4444', '#8b5cf6'
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            updateColor() {
+                if (params.randomColors && !this.color) {
+                    this.color = this.generateRandomColor();
+                } else if (!params.randomColors) {
+                    this.color = params.color;
+                }
+            }
+
+            update() {
+                this.velocity.x += this.acceleration.x;
+                this.velocity.y += this.acceleration.y;
+
+                const speed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
+                if (speed > this.maxSpeed) {
+                    this.velocity.x = (this.velocity.x / speed) * this.maxSpeed;
+                    this.velocity.y = (this.velocity.y / speed) * this.maxSpeed;
+                }
+
+                this.position.x += this.velocity.x;
+                this.position.y += this.velocity.y;
+
+                this.acceleration.x = 0;
+                this.acceleration.y = 0;
+
+                if (this.position.x < 0) this.position.x = canvas.width;
+                if (this.position.x > canvas.width) this.position.x = 0;
+                if (this.position.y < 0) this.position.y = canvas.height;
+                if (this.position.y > canvas.height) this.position.y = 0;
+            }
+
+            applyForce(force) {
+                this.acceleration.x += force.x;
+                this.acceleration.y += force.y;
+            }
+
+            distance(other) {
+                return Math.sqrt(
+                    (this.position.x - other.position.x) ** 2 +
+                    (this.position.y - other.position.y) ** 2
+                );
+            }
+
+            separate(boids) {
+                const desiredSeparation = params.separation;
+                let steer = { x: 0, y: 0 };
+                let count = 0;
+
+                boids.forEach(other => {
+                    const distance = this.distance(other);
+                    if (distance > 0 && distance < desiredSeparation) {
+                        const diff = {
+                            x: this.position.x - other.position.x,
+                            y: this.position.y - other.position.y
+                        };
+                        const magnitude = Math.sqrt(diff.x ** 2 + diff.y ** 2);
+                        if (magnitude > 0) {
+                            diff.x /= magnitude;
+                            diff.y /= magnitude;
+                            diff.x /= distance;
+                            diff.y /= distance;
+                            steer.x += diff.x;
+                            steer.y += diff.y;
+                            count++;
+                        }
+                    }
+                });
+
+                if (count > 0) {
+                    steer.x /= count;
+                    steer.y /= count;
+                    
+                    const magnitude = Math.sqrt(steer.x ** 2 + steer.y ** 2);
+                    if (magnitude > 0) {
+                        steer.x = (steer.x / magnitude) * this.maxSpeed;
+                        steer.y = (steer.y / magnitude) * this.maxSpeed;
+                        steer.x -= this.velocity.x;
+                        steer.y -= this.velocity.y;
+                        
+                        const forceMag = Math.sqrt(steer.x ** 2 + steer.y ** 2);
+                        if (forceMag > this.maxForce) {
+                            steer.x = (steer.x / forceMag) * this.maxForce;
+                            steer.y = (steer.y / forceMag) * this.maxForce;
+                        }
+                    }
+                }
+
+                return steer;
+            }
+
+            align(boids) {
+                const neighborDist = params.alignment;
+                let sum = { x: 0, y: 0 };
+                let count = 0;
+
+                boids.forEach(other => {
+                    const distance = this.distance(other);
+                    if (distance > 0 && distance < neighborDist) {
+                        sum.x += other.velocity.x;
+                        sum.y += other.velocity.y;
+                        count++;
+                    }
+                });
+
+                if (count > 0) {
+                    sum.x /= count;
+                    sum.y /= count;
+                    
+                    const magnitude = Math.sqrt(sum.x ** 2 + sum.y ** 2);
+                    if (magnitude > 0) {
+                        sum.x = (sum.x / magnitude) * this.maxSpeed;
+                        sum.y = (sum.y / magnitude) * this.maxSpeed;
+                        
+                        let steer = {
+                            x: sum.x - this.velocity.x,
+                            y: sum.y - this.velocity.y
+                        };
+                        
+                        const steerMag = Math.sqrt(steer.x ** 2 + steer.y ** 2);
+                        if (steerMag > this.maxForce) {
+                            steer.x = (steer.x / steerMag) * this.maxForce;
+                            steer.y = (steer.y / steerMag) * this.maxForce;
+                        }
+                        
+                        return steer;
+                    }
+                }
+                
+                return { x: 0, y: 0 };
+            }
+
+            cohesion(boids) {
+                const neighborDist = params.cohesion;
+                let sum = { x: 0, y: 0 };
+                let count = 0;
+
+                boids.forEach(other => {
+                    const distance = this.distance(other);
+                    if (distance > 0 && distance < neighborDist) {
+                        sum.x += other.position.x;
+                        sum.y += other.position.y;
+                        count++;
+                    }
+                });
+
+                if (count > 0) {
+                    sum.x /= count;
+                    sum.y /= count;
+                    return this.seek(sum);
+                }
+                
+                return { x: 0, y: 0 };
+            }
+
+            seek(target) {
+                let desired = {
+                    x: target.x - this.position.x,
+                    y: target.y - this.position.y
+                };
+                
+                const magnitude = Math.sqrt(desired.x ** 2 + desired.y ** 2);
+                if (magnitude > 0) {
+                    desired.x = (desired.x / magnitude) * this.maxSpeed;
+                    desired.y = (desired.y / magnitude) * this.maxSpeed;
+                    
+                    let steer = {
+                        x: desired.x - this.velocity.x,
+                        y: desired.y - this.velocity.y
+                    };
+                    
+                    const steerMag = Math.sqrt(steer.x ** 2 + steer.y ** 2);
+                    if (steerMag > this.maxForce) {
+                        steer.x = (steer.x / steerMag) * this.maxForce;
+                        steer.y = (steer.y / steerMag) * this.maxForce;
+                    }
+                    
+                    return steer;
+                }
+                
+                return { x: 0, y: 0 };
+            }
+
+            flock(boids) {
+                const sep = this.separate(boids);
+                const ali = this.align(boids);
+                const coh = this.cohesion(boids);
+
+                sep.x *= 1.5;
+                sep.y *= 1.5;
+                ali.x *= 1.0;
+                ali.y *= 1.0;
+                coh.x *= 1.0;
+                coh.y *= 1.0;
+
+                this.applyForce(sep);
+                this.applyForce(ali);
+                this.applyForce(coh);
+            }
+
+            draw(ctx) {
+                const angle = Math.atan2(this.velocity.y, this.velocity.x);
+                const speed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
+                const alpha = Math.min(1, speed / 2 + 0.3);
+                
+                ctx.save();
+                ctx.translate(this.position.x, this.position.y);
+                
+                // Add subtle glow effect
+                ctx.shadowBlur = 6;
+                ctx.shadowColor = this.color;
+                
+                // Convert hex to rgba for transparency
+                const r = parseInt(this.color.slice(1, 3), 16);
+                const g = parseInt(this.color.slice(3, 5), 16);
+                const b = parseInt(this.color.slice(5, 7), 16);
+                
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha * 0.8})`;
+                ctx.lineWidth = 1;
+                
+                switch(params.shape) {
+                    case 'circle':
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                        break;
+                        
+                    case 'triangle':
+                        ctx.rotate(angle);
+                        ctx.beginPath();
+                        ctx.moveTo(this.size * 2, 0);
+                        ctx.lineTo(-this.size, -this.size);
+                        ctx.lineTo(-this.size, this.size);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                        break;
+                        
+                    case 'square':
+                        ctx.rotate(angle);
+                        ctx.beginPath();
+                        ctx.rect(-this.size, -this.size, this.size * 2, this.size * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                        break;
+                        
+                    case 'diamond':
+                        ctx.rotate(angle);
+                        ctx.beginPath();
+                        ctx.moveTo(this.size * 1.5, 0);
+                        ctx.lineTo(0, -this.size);
+                        ctx.lineTo(-this.size * 1.5, 0);
+                        ctx.lineTo(0, this.size);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                        break;
+                }
+                
+                ctx.restore();
+            }
+        }
+
+        // Initialize
+        function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            
+            // Make canvas responsive
+            const rect = canvas.getBoundingClientRect();
+            const scale = window.devicePixelRatio || 1;
+            canvas.width = 800 * scale;
+            canvas.height = 500 * scale;
+            ctx.scale(scale, scale);
+            
+            initBoids();
+            animate();
+        }
+
+        function initBoids() {
+            boids = [];
+            for (let i = 0; i < params.boidsCount; i++) {
+                const boid = new Boid(
+                    Math.random() * canvas.width / (window.devicePixelRatio || 1),
+                    Math.random() * canvas.height / (window.devicePixelRatio || 1)
+                );
+                boids.push(boid);
+            }
+        }
+
+        function animate() {
+            // Create a trailing effect with configurable opacity
+            ctx.fillStyle = `rgba(0, 0, 0, ${params.trailOpacity})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            boids.forEach(boid => {
+                boid.maxSpeed = params.maxSpeed;
+                boid.size = params.size;
+                boid.updateColor();
+                boid.flock(boids);
+                boid.update();
+                boid.draw(ctx);
+            });
+
+            if (isRunning) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        // Control functions
+        function toggleAnimation() {
+            isRunning = !isRunning;
+            const playIcon = document.getElementById('play-icon');
+            
+            if (isRunning) {
+                playIcon.textContent = '⏸';
+                animate();
+            } else {
+                playIcon.textContent = '▶';
+            }
+        }
+
+        function resetSimulation() {
+            initBoids();
+        }
+
+        function toggleInfo() {
+            const infoPanel = document.getElementById('info-panel');
+            const infoBtn = document.getElementById('info-btn');
+            
+            if (infoPanel.classList.contains('hidden')) {
+                infoPanel.classList.remove('hidden');
+                infoBtn.style.display = 'none';
+            } else {
+                infoPanel.classList.add('hidden');
+                infoBtn.style.display = 'flex';
+            }
+        }
+
+        function toggleControls() {
+            const panels = document.getElementById('control-panels');
+            const handle = document.getElementById('control-handle');
+            
+            if (panels.classList.contains('expanded')) {
+                panels.classList.remove('expanded');
+                handle.classList.add('collapsed');
+            } else {
+                panels.classList.add('expanded');
+                handle.classList.remove('collapsed');
+            }
+        }
+
+        function switchTab(tabName) {
+            // Remove active class from all tabs and contents
+            document.querySelectorAll('.control-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.control-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active class to clicked tab and corresponding content
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-content').classList.add('active');
+        }
+
+        function loadPreset(presetName) {
+            const presets = {
+                schooling: { 
+                    separation: 15, alignment: 80, cohesion: 80, maxSpeed: 1.5, size: 2.5, shape: 'circle',
+                    trailOpacity: 0.05, color: '#34d399', randomColors: false
+                },
+                murmurations: { 
+                    separation: 20, alignment: 60, cohesion: 70, maxSpeed: 2.5, size: 3, shape: 'triangle',
+                    trailOpacity: 0.15, color: '#60a5fa', randomColors: false
+                },
+                swarm: { 
+                    separation: 30, alignment: 40, cohesion: 90, maxSpeed: 1.8, size: 2, shape: 'circle',
+                    trailOpacity: 0.2, color: '#fbbf24', randomColors: false
+                },
+                scattered: { 
+                    separation: 80, alignment: 20, cohesion: 30, maxSpeed: 3, size: 4, shape: 'diamond',
+                    trailOpacity: 0.3, color: '#f87171', randomColors: true
+                },
+                tight: { 
+                    separation: 10, alignment: 100, cohesion: 120, maxSpeed: 1, size: 2, shape: 'square',
+                    trailOpacity: 0.02, color: '#a78bfa', randomColors: false
+                },
+                chaotic: { 
+                    separation: 60, alignment: 30, cohesion: 40, maxSpeed: 4, size: 5, shape: 'diamond',
+                    trailOpacity: 0.4, color: '#fb923c', randomColors: true
+                }
+            };
+            
+            const preset = presets[presetName];
+            if (preset) {
+                Object.keys(preset).forEach(key => {
+                    params[key] = preset[key];
+                });
+                
+                // Update UI controls
+                updateAllControls();
+                initBoids(); // Reset simulation with new parameters
+            }
+        }
+
+        function toggleRandomColors() {
+            params.randomColors = !params.randomColors;
+            const btn = document.getElementById('random-btn');
+            const colorPicker = document.getElementById('color-picker');
+            
+            if (params.randomColors) {
+                btn.style.background = 'rgba(59, 130, 246, 0.4)';
+                btn.style.color = '#60a5fa';
+                colorPicker.style.opacity = '0.5';
+                // Regenerate colors for all boids
+                boids.forEach(boid => {
+                    boid.color = boid.generateRandomColor();
+                });
+            } else {
+                btn.style.background = 'rgba(59, 130, 246, 0.15)';
+                btn.style.color = '#60a5fa';
+                colorPicker.style.opacity = '1';
+                // Set all boids to the selected color
+                boids.forEach(boid => {
+                    boid.color = params.color;
+                });
+            }
+        }
+
+        function updateAllControls() {
+            document.getElementById('separation-value').textContent = params.separation;
+            document.getElementById('alignment-value').textContent = params.alignment;
+            document.getElementById('cohesion-value').textContent = params.cohesion;
+            document.getElementById('speed-value').textContent = params.maxSpeed;
+            document.getElementById('size-value').textContent = params.size;
+            document.getElementById('count-value').textContent = params.boidsCount;
+            document.getElementById('trail-value').textContent = Math.round(params.trailOpacity * 100);
+            document.getElementById('shape-select').value = params.shape;
+            document.getElementById('color-picker').value = params.color;
+            
+            // Update slider positions
+            document.querySelector('input[oninput*="separation"]').value = params.separation;
+            document.querySelector('input[oninput*="alignment"]').value = params.alignment;
+            document.querySelector('input[oninput*="cohesion"]').value = params.cohesion;
+            document.querySelector('input[oninput*="maxSpeed"]').value = params.maxSpeed;
+            document.querySelector('input[oninput*="size"]').value = params.size;
+            document.querySelector('input[oninput*="boidsCount"]').value = params.boidsCount;
+            document.querySelector('input[oninput*="trailOpacity"]').value = Math.round(params.trailOpacity * 100);
+            
+            // Update random colors button state
+            const btn = document.getElementById('random-btn');
+            const colorPicker = document.getElementById('color-picker');
+            if (params.randomColors) {
+                btn.style.background = 'rgba(59, 130, 246, 0.4)';
+                colorPicker.style.opacity = '0.5';
+            } else {
+                btn.style.background = 'rgba(59, 130, 246, 0.15)';
+                colorPicker.style.opacity = '1';
+            }
+        }
+
+        function updateParam(key, value) {
+            params[key] = value;
+            if (key === 'boidsCount') {
+                initBoids();
+            } else if (key === 'color' && !params.randomColors) {
+                // Update all boid colors when color changes and random is off
+                boids.forEach(boid => {
+                    boid.color = value;
+                });
+            } else if (key === 'randomColors' && value) {
+                // Randomize all colors when random mode is enabled
+                boids.forEach(boid => {
+                    boid.color = boid.generateRandomColor();
+                });
+            }
+        }
+
+        function updateDisplay(elementId, value) {
+            document.getElementById(elementId).textContent = value;
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', init);
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const rect = canvas.getBoundingClientRect();
+            const scale = window.devicePixelRatio || 1;
+            canvas.width = 800 * scale;
+            canvas.height = 500 * scale;
+            ctx.scale(scale, scale);
+        });
+    </script>
+</body>
+</html>
