@@ -556,6 +556,7 @@
             margin-top: 24px;
             backdrop-filter: blur(16px);
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            margin-bottom: 24px;
         }
         
         .insights h3 {
@@ -587,6 +588,128 @@
         .insights strong {
             color: white;
             font-weight: 600;
+        }
+        
+        .content-section {
+            background: rgba(17, 24, 39, 0.75);
+            border: 1px solid rgba(55, 65, 81, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .content-section h2 {
+            color: #60a5fa;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .content-section h3 {
+            color: #22d3ee;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 16px 0 8px 0;
+        }
+        
+        .content-section p {
+            color: #d1d5db;
+            line-height: 1.6;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+        
+        .content-section a {
+            color: #60a5fa;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .content-section a:hover {
+            color: #93c5fd;
+            text-decoration: underline;
+        }
+        
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+        
+        .example-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            border-radius: 6px;
+            padding: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .example-card:hover {
+            background: rgba(0, 0, 0, 0.4);
+            border-color: rgba(96, 165, 250, 0.3);
+        }
+        
+        .example-card h4 {
+            color: #fbbf24;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        
+        .example-card p {
+            color: #9ca3af;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin: 0;
+        }
+        
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+        
+        .resource-card {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 6px;
+            padding: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .resource-card:hover {
+            background: rgba(59, 130, 246, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        .resource-card h4 {
+            color: #60a5fa;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .resource-card p {
+            color: #9ca3af;
+            font-size: 0.75rem;
+            line-height: 1.3;
+            margin: 0;
+        }
+        
+        .highlight-stat {
+            background: linear-gradient(135deg, #60a5fa, #22d3ee);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            font-size: 1.1em;
         }
         
         /* Responsive */
@@ -869,6 +992,149 @@
                 <li>• <strong>Adaptive systems:</strong> The flock responds dynamically to changes</li>
                 <li>• <strong>Collective intelligence:</strong> The group exhibits behaviors no individual possesses</li>
             </ul>
+        </div>
+
+        <div class="content-section">
+            <h2>🧠 The Science Behind Swarm Intelligence</h2>
+            <p>Swarm intelligence represents one of nature's most elegant solutions to complex coordination problems. Recent research has revealed that the simple rules governing flocking behavior—separation, alignment, and cohesion—create remarkably sophisticated group dynamics that often outperform centralized control systems.</p>
+            
+            <h3>Recent Breakthroughs</h3>
+            <p>Studies from <strong>2023-2024</strong> have shown that swarm systems can adapt to environmental changes significantly faster than hierarchical systems. Researchers at Princeton and MIT continue to discover that the "edge of chaos"—the critical point between order and disorder—is where swarms exhibit their most intelligent behaviors.</p>
+        </div>
+
+        <div class="content-section">
+            <h2>🌍 Real-World Applications</h2>
+            <p>Swarm intelligence has moved far beyond academic curiosity to solve real-world challenges across industries:</p>
+            
+            <div class="example-grid">
+                <div class="example-card">
+                    <h4>🚗 Autonomous Vehicles</h4>
+                    <p>Tesla and Waymo use swarm algorithms for vehicle coordination, working to reduce traffic congestion in test scenarios.</p>
+                </div>
+                
+                <div class="example-card">
+                    <h4>🏭 Amazon Warehouses</h4>
+                    <p>Hundreds of thousands of robots use swarm principles to coordinate package handling, dramatically increasing efficiency.</p>
+                </div>
+                
+                <div class="example-card">
+                    <h4>🐝 Agricultural Drones</h4>
+                    <p>Swarms of pollination drones are being developed to supplement declining bee populations, with promising trial results.</p>
+                </div>
+                
+                <div class="example-card">
+                    <h4>🎯 Military Defense</h4>
+                    <p>Drone swarms for surveillance and protection, with the ability to operate autonomously even when communication is disrupted.</p>
+                </div>
+                
+                <div class="example-card">
+                    <h4>🏥 Medical Nanorobots</h4>
+                    <p>Researchers are developing swarms of microscopic robots that could navigate the bloodstream to deliver targeted cancer treatments.</p>
+                </div>
+                
+                <div class="example-card">
+                    <h4>🌊 Ocean Cleanup</h4>
+                    <p>Swarms of autonomous boats coordinate to collect ocean plastic, adapting their formation based on current and debris patterns.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h2>🔬 Latest Research Frontiers</h2>
+            
+            <h3>Hybrid Intelligence</h3>
+            <p>Cutting-edge research combines artificial swarms with biological systems. Scientists at Harvard are studying how robotic "leader" bees can influence real bee colonies, potentially helping save endangered populations through guided foraging.</p>
+            
+            <h3>Quantum Swarm Computing</h3>
+            <p>IBM and Google are exploring how quantum principles could enhance swarm algorithms, potentially allowing for instantaneous coordination across vast distances.</p>
+            
+            <h3>Climate Modeling</h3>
+            <p>Climate scientists use swarm models to understand how individual weather patterns create large-scale climate phenomena, showing promising improvements in prediction accuracy over traditional models.</p>
+        </div>
+
+        <div class="content-section">
+            <h2>🔗 Explore Further</h2>
+            <p>Dive deeper into the fascinating world of swarm intelligence with these carefully curated resources:</p>
+            
+            <div class="resource-grid">
+                <a href="https://www.complexity-explorables.org/" target="_blank" class="resource-card">
+                    <h4>Interactive Simulations</h4>
+                    <p>Complexity Explorables - Play with dozens of interactive models of complex systems and emergent behavior.</p>
+                </a>
+                
+                <a href="https://www.youtube.com/watch?v=M028vafB0l8" target="_blank" class="resource-card">
+                    <h4>Swarm Demonstration</h4>
+                    <p>YouTube user Sam-site created a similar 2D simulation of boids using Microsoft's XNA based loosely on <a href="http://www.kfish.org/boids/pseudocode.html">Conrad Parker's pseudocode</a></p>
+                </a>
+                
+                <a href="https://www.santafe.edu/research/results/working-papers/flocks-and-crowds" target="_blank" class="resource-card">
+                    <h4>Santa Fe Institute</h4>
+                    <p>Research papers on collective behavior and complexity science from the world's leading institute.</p>
+                </a>
+                
+                <a href="https://github.com/beneater/boids" target="_blank" class="resource-card">
+                    <h4>Code & Learn</h4>
+                    <p>Ben Eater's educational repository with step-by-step coding tutorials for building your own boids simulation.</p>
+                </a>
+                
+                <a href="https://www.ted.com/talks/deborah_gordon_what_ants_teach_us_about_the_brain_cancer_and_the_internet" target="_blank" class="resource-card">
+                    <h4>TED Talk</h4>
+                    <p>Deborah Gordon explains how ant colonies make decisions without a central authority—and what this teaches us.</p>
+                </a>
+                
+                <a href="https://www.nature.com/subjects/collective-behaviour" target="_blank" class="resource-card">
+                    <h4>Latest Research</h4>
+                    <p>Nature's collection of the most recent peer-reviewed research on collective behavior and swarm intelligence.</p>
+                </a>
+                
+                <a href="https://www.swarm.org/" target="_blank" class="resource-card">
+                    <h4>Swarm Development Group</h4>
+                    <p>Open-source tools and frameworks for agent-based modeling and swarm simulation research.</p>
+                </a>
+                
+                <a href="https://books.google.com/books?id=1YSdNwAACAAJ" target="_blank" class="resource-card">
+                    <h4>Book: "Swarm Intelligence"</h4>
+                    <p>Kennedy & Eberhart's foundational text—the definitive guide to understanding swarm algorithms and applications.</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h2>🎮 Try These Experiments</h2>
+            <p>Use the simulation above to explore these fascinating phenomena:</p>
+            
+            <div class="example-grid">
+                <div class="example-card">
+                    <h4>🌪️ Vortex Formation</h4>
+                    <p>Set high cohesion (120+) and medium separation. Watch how circular vortex patterns naturally emerge from the simple rules.</p>
+                </div>
+                
+                <div class="example-card">
+                    <h4>🌊 Wave Propagation</h4>
+                    <p>Use the "Schooling Fish" preset and pause/unpause rapidly. Observe how information waves spread through the flock.</p>
+                </div>
+                
+                <div class="example-card">
+                    <h4>🎯 Leadership Emergence</h4>
+                    <p>Start with "Scattered" preset and gradually increase cohesion. Watch how temporary leaders naturally emerge and dissolve.</p>
+                </div>
+                
+                <div class="example-card">
+                    <h4>🔄 Phase Transitions</h4>
+                    <p>Slowly adjust alignment from 0 to 150. Notice the sharp transition points where behavior dramatically changes.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h2>🚀 The Future of Swarm Intelligence</h2>
+            <p>Swarm intelligence offers a fundamentally different approach to machine intelligence based on collaboration and emergent behavior rather than simple computation and programming. Collective wisdom always wins out over individual power.</p>
+            
+            <p>The implications extend far beyond technology: Swarm principles are currently being applied to urban planning, financial markets, and even organizational management. Understanding how simple rules create complex behaviors may be key to solving some of humanity's greatest challenges.</p>
+            
+            <p>While most approaches to improving AI involve making models smarter, I think our next major breakthrough will stem from discovering better ways for simple agents to work together. What patterns do you notice in the simulation above? How might these principles apply to challenges in your own field?</p>
+            
+            <p><strong>I really had fun making this little simulation and I hope you enjoyed playing with it. There's something beautiful about the universal applicability of these principles to any system where individual actions create collective outcomes.</strong></p>
         </div>
     </div>
 
